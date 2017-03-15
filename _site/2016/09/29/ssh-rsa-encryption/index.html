@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="关于编程，摄影与读书">
+    <meta name="keywords"  content="编程，摄影，读书">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+
+    <title>SSH加密原理与RSA非对称加密算法 - Wenyuan Du's Blog</title>
+
+    <link rel="canonical" href="https://wenyuandu.github.io/2016/09/29/ssh-rsa-encryption/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/hux-blog.min.css">
+
+    <!-- Pygments Github CSS -->
+    <link rel="stylesheet" href="/css/syntax.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">Wenyuan Du</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/about/">About</a>
+                    </li>
+                    
+                    <li>
+                        <a href="/tags/">Tags</a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    var __HuxNav__ = {
+        close: function(){
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        },
+        open: function(){
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+
+    // Bind Event
+    $toggle.addEventListener('click', function(e){
+        if ($navbar.className.indexOf('in') > 0) {
+            __HuxNav__.close()
+        }else{
+            __HuxNav__.open()
+        }
+    })
+
+    /**
+     * Since Fastclick is used to delegate 'touchstart' globally
+     * to hack 300ms delay in iOS by performing a fake 'click',
+     * Using 'e.stopPropagation' to stop 'touchstart' event from 
+     * $toggle/$collapse will break global delegation.
+     * 
+     * Instead, we use a 'e.target' filter to prevent handler
+     * added to document close HuxNav.  
+     *
+     * Also, we use 'click' instead of 'touchstart' as compromise
+     */
+    document.addEventListener('click', function(e){
+        if(e.target == $toggle) return;
+        if(e.target.className == 'icon-bar') return;
+        __HuxNav__.close();
+    })
+</script>
+
+
+    <!-- Image to hack wechat -->
+<!-- <img src="/img/icon_wechat.png" width="0" height="0"> -->
+<!-- <img src="/img/home-bg.jpg" width="0" height="0"> -->
+
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        position: relative;
+        background-image: url('/img/home-bg.jpg')
+    }
+
+    
+</style>
+<header class="intro-header" >
+    <div class="header-mask"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <div class="post-heading">
+                    <div class="tags">
+                        
+                        <a class="tag" href="/tags/#programming" title="programming">programming</a>
+                        
+                    </div>
+                    <h1>SSH加密原理与RSA非对称加密算法</h1>
+                    
+                    
+                    <h2 class="subheading"></h2>
+                    
+                    <span class="meta">Posted by Wenyuan Du on September 29, 2016</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+    <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+				<p>首先声明一下，这里所说的SSH，并不是Java传统的三大框架，而是一种建立在应用层和传输层基础上的安全外壳协议，熟悉Linux的朋友经常使用到一 个SSH Secure Shell Cilent的工具，本文也是基于此工具加密原理的学习，在SSH的加密原理中，使用到了RSA非对称加密算法，本文也一并做了学习和了解。</p>
+
+<h1 id="section">非对称加密算法：</h1>
+
+<p>在日常的工作生产中， 我们经常需要进行数据的通讯，开发人员经常需要对数据进行加解密操作，以保证数据的安全。数据的加密算法非为对称加密和非对称加密两种，常用的DES、三 重DES、AES等都属于对称加密，即通过一个密钥可以进行数据的加解密，密钥一旦泄漏，传输的数据则不安全。</p>
+
+<p>非对称加密算法的核心源于数学问题，它存在公钥和私钥的概念，要完成加解密操作，需要两个密钥同时参与。我们常说的“公钥加密，私钥加密”或“私钥加密， 公钥解密”都属于非对称加密的范畴，后文中讲到的RSA算法也一种典型的非对称加密算法。公钥加密的数据必须使用私钥才可以解密，同样，私钥加密的数据也 只能通过公钥进行解密。</p>
+
+<p>相比对称加密，非对称加密的安全性得到了提升，但是也存在明显的缺点，非对称加解密的效率要远远小于对称加解密。所以非对称加密往往被用在一些安全性要求比较高的应用或领域中。</p>
+
+<h1 id="rsa">典型的RSA非对称加密：</h1>
+
+<p>RSA加密算法是一种典型的非对称加密算法，它基于大数的因式分解数学难题，它也是应用最广泛的非对称加密算法，于1978年由美国麻省理工学院（MIT）的三位学着：Ron Rivest、Adi Shamir 和 Leonard Adleman 共同提出。</p>
+
+<p>它的原理较为简单，我们假设有消息发送方A和消息接收方B，通过下面的几个步骤，我们就可以完成消息的加密传递：</p>
+
+<ol>
+  <li>消息发送方A在本地构建密钥对，公钥和私钥；</li>
+  <li>消息发送方A将产生的公钥发送给消息接收方B；</li>
+  <li>B向A发送数据时，通过公钥进行加密，A接收到数据后通过私钥进行解密，完成一次通信；</li>
+  <li>反之，A向B发送数据时，通过私钥对数据进行加密，B接收到数据后通过公钥进行解密。</li>
+</ol>
+
+<p>由于公钥是消息发送方A暴露给消息接收方B的，所以这种方式也存在一定的安全隐患，如果公钥在数据传输过程中泄漏，则A通过私钥加密的数据就可能被解密。</p>
+
+<p>如果要建立更安全的加密消息传递模型，需要消息发送方和消息接收方各构建一套密钥对，并分别将各自的公钥暴露给对方，在进行消息传递时，A通过B的公钥对数据加密，B接收到消息通过B的私钥进行解密，反之，B通过A的公钥进行加密，A接收到消息后通过A的私钥进行解密。</p>
+
+<p>当然，这种方式可能存在数据传递被模拟的隐患，我们可以通过数字签名等技术进行安全性的进一步提升。由于存在多次的非对称加解密，这种方式带来的效率问题也更加严重。</p>
+
+<h1 id="ssh">SSH加密原理：</h1>
+
+<p>在SSH安全协议的原理中， 是一种非对称加密与对称加密算法的结合，先看下图：
+<img src="/img/ssh.png" alt="ssh.png" /></p>
+
+<p>这里进行一下说明：</p>
+<ol>
+  <li>首先服务端会通过非对称加密，产生一个公钥和私钥；</li>
+  <li>在客户端发起请求时，服务端将公钥暴露给客户端，这个公钥可以被任意暴露；</li>
+  <li>客户端在获取公钥后，会先产生一个由256位随机数字组成的会话密钥，这里称为口令；</li>
+  <li>客户端通过公钥将这个口令加密，发送给服务器端；</li>
+  <li>服务器端通过私钥进行解密，获取到通讯口令；</li>
+  <li>之后，客户端和服务端的信息传递，都通过这个口令进行对称的加密。</li>
+</ol>
+
+<p>个人感觉，这样的设计在一定程度上提高了加解密的效率，不过，与客户端服务端各构建一套密钥对的加解密方式相比，在安全性上可能有所下降。在上面所述的通过口令进行加密的过程中，数据也是可以被窃听的，不过由于密钥是256个随机数字，有10的256次方中组合方式，所以破解难度也很大。相对还是比较安全的。服务端和客户端都提前知道了密钥，SSH的这种方式，服务端是通过解密获取到了密钥。</p>
+
+<h1 id="dh">DH密钥交换算法</h1>
+
+<p>SSH的原理，是基于RSA非对称加密，RSA是基于大数的因式分解数学难题，下面要提到的DH密钥交换算法则是基于有限域上的离散对数难题。</p>
+
+<p>DH算法是一种密钥协商算法，只用于密钥的分配，不用于消息的加解密。它提供了一种安全的交换密钥的方式，通过交换的密钥进行数据的加解密。就像SSH原理中，口令的交换，不过DH算法更安全。</p>
+
+<p>我们举个例子来进行说明，假设有A、B两方，A作为发送者，B作为接收者。通过下面的几个步骤就可以构建出一个只属于双方的密钥口令，如下：</p>
+
+<ol>
+  <li>首先A、B双方，在通信前构建专属于自己的密钥对，假设分别是公钥A，私钥A，公钥B，私钥B；</li>
+  <li>A将自己的公钥A暴露给B，B通过私钥B和公钥A经过一定的运算产生出本地的密钥B；</li>
+  <li>同样，B将自己的公钥B暴露给A，A通过私钥A和公钥B经过一定的运算产生出本地的密钥A；</li>
+  <li>最后，这个算法有意思的一点就是，密钥A和密钥B是一致的，这样A、B双方就拥有了一个属于双方的“秘密”口令；</li>
+  <li>DH算法的产生是，对称加密向非对称加密的过度，为后续非对称加密的产生和发展奠定了基础。</li>
+</ol>
+
+<p>总结：成文的过程中，阅读了一些关于加密解密的算法，做出了如上的理解，毕竟术业有专攻，也可能存在理解偏颇，甚至错误的地方，希望大家批评指正。</p>
+
+
+                <hr>
+
+                
+
+
+                <ul class="pager">
+                    
+                    <li class="previous">
+                        <a href="/2016/01/25/how-to-read-a-book/" data-toggle="tooltip" data-placement="top" title="How to Read a Book">
+                        Previous<br>
+                        <span>How to Read a Book</span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+
+
+                
+                <!-- 多说评论框 start -->
+                <div class="comment">
+                    <div class="ds-thread"
+                        data-thread-key="/2016/09/29/ssh-rsa-encryption"
+                        data-title="SSH加密原理与RSA非对称加密算法"
+                        data-url="https://wenyuandu.github.io/2016/09/29/ssh-rsa-encryption/" >
+                    </div>
+                </div>
+                <!-- 多说评论框 end -->
+                
+
+                
+
+            </div>  
+
+    <!-- Side Catalog Container -->
+        
+            <div class="
+                col-lg-2 col-lg-offset-0
+                visible-lg-block
+                sidebar-container
+                catalog-container">
+                <div class="side-catalog">
+                    <hr class="hidden-sm hidden-xs">
+                    <h5>
+                        <a class="catalog-toggle" href="#">CATALOG</a>
+                    </h5>
+                    <ul class="catalog-body"></ul>
+                </div>
+            </div>
+        
+
+    <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <hr class="hidden-sm hidden-xs">
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+        				
+                            
+        				
+                            
+        				
+        			</div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+                    
+                        <li><a href="http://su.gallery/">Su</a></li>
+                    
+                        <li><a href="http://mida.re/">乱序</a></li>
+                    
+                        <li><a href="http://qianduan.guru/">前端外刊评论</a></li>
+                    
+                        <li><a href="http://lingyu.wang/">天镶的博客</a></li>
+                    
+                        <li><a href="http://hmqk1995.github.io">Luke 的自留地</a></li>
+                    
+                        <li><a href="http://ebnbin.com/">Ebn's Blog</a></li>
+                    
+                        <li><a href="http://blog.smdcn.net">SmdCn's Blog</a></li>
+                    
+                        <li><a href="http://xieminis.me/">解旻的博客</a></li>
+                    
+                        <li><a href="http://dhong.co">DHong Say</a></li>
+                    
+                        <li><a href="http://ingf.github.io/">尹峰以为</a></li>
+                    
+                        <li><a href="http://wepiaofei.github.io/blog/">前端神盾局</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User by Hux
+    var _user = 'huxblog';
+
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user };
+    (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'always',
+          placement: 'right',
+          icon: '#'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    
+                    
+
+                    <!-- add Weibo, Zhihu by Hux, add target = "_blank" to <a> by Hux -->
+                    
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/wen-yuan-4-42">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li>
+                        <a target="_blank" href="http://weibo.com/1952933935">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-weibo fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+
+
+                    
+                    
+                    <li>
+                        <a target="_blank" href="https://github.com/wenyuandu">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; Wenyuan Du 2016
+                    <br>
+                    Theme by <a href="http://huangxuan.me">Hux</a> |
+                    <iframe
+                        style="margin-left: 2px; margin-bottom:-5px;"
+                        frameborder="0" scrolling="0" width="91px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=huxpro&repo=huxpro.github.io&type=star&count=true" >
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js "></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js "></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js "></script>
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/ 
+     - https://github.com/jneen/rouge/wiki/list-of-supported-languages-and-lexers   
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async('/js/jquery.tagcloud.js',function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("//cdnjs.cloudflare.com/ajax/libs/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+<!-- Side Catalog -->
+
+<script type="text/javascript">
+    function generateCatalog (selector) {
+        var P = $('div.post-container'),a,n,t,l,i,c;
+        a = P.find('h1,h2,h3,h4,h5,h6');
+        a.each(function () {
+            n = $(this).prop('tagName').toLowerCase();
+            i = "#"+$(this).prop('id');
+            t = $(this).text();
+            c = $('<a href="'+i+'" rel="nofollow">'+t+'</a>');
+            l = $('<li class="'+n+'_nav"></li>').append(c);
+            $(selector).append(l);
+        });
+        return true;    
+    }
+
+    generateCatalog(".catalog-body");
+
+    // toggle side catalog
+    $(".catalog-toggle").click((function(e){
+        e.preventDefault();
+        $('.side-catalog').toggleClass("fold")
+    }))
+
+    /*
+     * Doc: https://github.com/davist11/jQuery-One-Page-Nav
+     * Fork by Hux to support padding
+     */
+    async("/js/jquery.nav.js", function () {
+        $('.catalog-body').onePageNav({
+            currentClass: "active",
+            changeHash: !1,
+            easing: "swing",
+            filter: "",
+            scrollSpeed: 700,
+            scrollOffset: 0,
+            scrollThreshold: .2,
+            begin: null,
+            end: null,
+            scrollChange: null,
+            padding: 80
+        });
+    });
+</script>
+
+
+
+
+
+<!-- Image to hack wechat -->
+<img src="/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

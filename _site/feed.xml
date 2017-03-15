@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Wenyuan Du</title>
+    <description>关于编程，摄影与读书</description>
+    <link>https://wenyuandu.github.io/</link>
+    <atom:link href="https://wenyuandu.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 30 Sep 2016 23:51:24 +0800</pubDate>
+    <lastBuildDate>Fri, 30 Sep 2016 23:51:24 +0800</lastBuildDate>
+    <generator>Jekyll v3.2.1</generator>
+    
+      <item>
+        <title>SSH加密原理与RSA非对称加密算法</title>
+        <description>&lt;p&gt;首先声明一下，这里所说的SSH，并不是Java传统的三大框架，而是一种建立在应用层和传输层基础上的安全外壳协议，熟悉Linux的朋友经常使用到一 个SSH Secure Shell Cilent的工具，本文也是基于此工具加密原理的学习，在SSH的加密原理中，使用到了RSA非对称加密算法，本文也一并做了学习和了解。&lt;/p&gt;
+
+&lt;h1 id=&quot;section&quot;&gt;非对称加密算法：&lt;/h1&gt;
+
+&lt;p&gt;在日常的工作生产中， 我们经常需要进行数据的通讯，开发人员经常需要对数据进行加解密操作，以保证数据的安全。数据的加密算法非为对称加密和非对称加密两种，常用的DES、三 重DES、AES等都属于对称加密，即通过一个密钥可以进行数据的加解密，密钥一旦泄漏，传输的数据则不安全。&lt;/p&gt;
+
+&lt;p&gt;非对称加密算法的核心源于数学问题，它存在公钥和私钥的概念，要完成加解密操作，需要两个密钥同时参与。我们常说的“公钥加密，私钥加密”或“私钥加密， 公钥解密”都属于非对称加密的范畴，后文中讲到的RSA算法也一种典型的非对称加密算法。公钥加密的数据必须使用私钥才可以解密，同样，私钥加密的数据也 只能通过公钥进行解密。&lt;/p&gt;
+
+&lt;p&gt;相比对称加密，非对称加密的安全性得到了提升，但是也存在明显的缺点，非对称加解密的效率要远远小于对称加解密。所以非对称加密往往被用在一些安全性要求比较高的应用或领域中。&lt;/p&gt;
+
+&lt;h1 id=&quot;rsa&quot;&gt;典型的RSA非对称加密：&lt;/h1&gt;
+
+&lt;p&gt;RSA加密算法是一种典型的非对称加密算法，它基于大数的因式分解数学难题，它也是应用最广泛的非对称加密算法，于1978年由美国麻省理工学院（MIT）的三位学着：Ron Rivest、Adi Shamir 和 Leonard Adleman 共同提出。&lt;/p&gt;
+
+&lt;p&gt;它的原理较为简单，我们假设有消息发送方A和消息接收方B，通过下面的几个步骤，我们就可以完成消息的加密传递：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;消息发送方A在本地构建密钥对，公钥和私钥；&lt;/li&gt;
+  &lt;li&gt;消息发送方A将产生的公钥发送给消息接收方B；&lt;/li&gt;
+  &lt;li&gt;B向A发送数据时，通过公钥进行加密，A接收到数据后通过私钥进行解密，完成一次通信；&lt;/li&gt;
+  &lt;li&gt;反之，A向B发送数据时，通过私钥对数据进行加密，B接收到数据后通过公钥进行解密。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;由于公钥是消息发送方A暴露给消息接收方B的，所以这种方式也存在一定的安全隐患，如果公钥在数据传输过程中泄漏，则A通过私钥加密的数据就可能被解密。&lt;/p&gt;
+
+&lt;p&gt;如果要建立更安全的加密消息传递模型，需要消息发送方和消息接收方各构建一套密钥对，并分别将各自的公钥暴露给对方，在进行消息传递时，A通过B的公钥对数据加密，B接收到消息通过B的私钥进行解密，反之，B通过A的公钥进行加密，A接收到消息后通过A的私钥进行解密。&lt;/p&gt;
+
+&lt;p&gt;当然，这种方式可能存在数据传递被模拟的隐患，我们可以通过数字签名等技术进行安全性的进一步提升。由于存在多次的非对称加解密，这种方式带来的效率问题也更加严重。&lt;/p&gt;
+
+&lt;h1 id=&quot;ssh&quot;&gt;SSH加密原理：&lt;/h1&gt;
+
+&lt;p&gt;在SSH安全协议的原理中， 是一种非对称加密与对称加密算法的结合，先看下图：
+&lt;img src=&quot;/img/ssh.png&quot; alt=&quot;ssh.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里进行一下说明：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;首先服务端会通过非对称加密，产生一个公钥和私钥；&lt;/li&gt;
+  &lt;li&gt;在客户端发起请求时，服务端将公钥暴露给客户端，这个公钥可以被任意暴露；&lt;/li&gt;
+  &lt;li&gt;客户端在获取公钥后，会先产生一个由256位随机数字组成的会话密钥，这里称为口令；&lt;/li&gt;
+  &lt;li&gt;客户端通过公钥将这个口令加密，发送给服务器端；&lt;/li&gt;
+  &lt;li&gt;服务器端通过私钥进行解密，获取到通讯口令；&lt;/li&gt;
+  &lt;li&gt;之后，客户端和服务端的信息传递，都通过这个口令进行对称的加密。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;个人感觉，这样的设计在一定程度上提高了加解密的效率，不过，与客户端服务端各构建一套密钥对的加解密方式相比，在安全性上可能有所下降。在上面所述的通过口令进行加密的过程中，数据也是可以被窃听的，不过由于密钥是256个随机数字，有10的256次方中组合方式，所以破解难度也很大。相对还是比较安全的。服务端和客户端都提前知道了密钥，SSH的这种方式，服务端是通过解密获取到了密钥。&lt;/p&gt;
+
+&lt;h1 id=&quot;dh&quot;&gt;DH密钥交换算法&lt;/h1&gt;
+
+&lt;p&gt;SSH的原理，是基于RSA非对称加密，RSA是基于大数的因式分解数学难题，下面要提到的DH密钥交换算法则是基于有限域上的离散对数难题。&lt;/p&gt;
+
+&lt;p&gt;DH算法是一种密钥协商算法，只用于密钥的分配，不用于消息的加解密。它提供了一种安全的交换密钥的方式，通过交换的密钥进行数据的加解密。就像SSH原理中，口令的交换，不过DH算法更安全。&lt;/p&gt;
+
+&lt;p&gt;我们举个例子来进行说明，假设有A、B两方，A作为发送者，B作为接收者。通过下面的几个步骤就可以构建出一个只属于双方的密钥口令，如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;首先A、B双方，在通信前构建专属于自己的密钥对，假设分别是公钥A，私钥A，公钥B，私钥B；&lt;/li&gt;
+  &lt;li&gt;A将自己的公钥A暴露给B，B通过私钥B和公钥A经过一定的运算产生出本地的密钥B；&lt;/li&gt;
+  &lt;li&gt;同样，B将自己的公钥B暴露给A，A通过私钥A和公钥B经过一定的运算产生出本地的密钥A；&lt;/li&gt;
+  &lt;li&gt;最后，这个算法有意思的一点就是，密钥A和密钥B是一致的，这样A、B双方就拥有了一个属于双方的“秘密”口令；&lt;/li&gt;
+  &lt;li&gt;DH算法的产生是，对称加密向非对称加密的过度，为后续非对称加密的产生和发展奠定了基础。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;总结：成文的过程中，阅读了一些关于加密解密的算法，做出了如上的理解，毕竟术业有专攻，也可能存在理解偏颇，甚至错误的地方，希望大家批评指正。&lt;/p&gt;
+</description>
+        <pubDate>Thu, 29 Sep 2016 22:00:00 +0800</pubDate>
+        <link>https://wenyuandu.github.io/2016/09/29/ssh-rsa-encryption/</link>
+        <guid isPermaLink="true">https://wenyuandu.github.io/2016/09/29/ssh-rsa-encryption/</guid>
+        
+        <category>programming</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>How to Read a Book</title>
+        <description>&lt;h2 id=&quot;section&quot;&gt;阅读目的的三个层次：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;娱乐消遣&lt;/li&gt;
+  &lt;li&gt;获得资讯&lt;/li&gt;
+  &lt;li&gt;增进理解&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-1&quot;&gt;阅读时应心存的四个问题：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;整体来说，这本书到底在谈什么？&lt;/li&gt;
+  &lt;li&gt;书的细节部分，即作者的想法或论点是什么？&lt;/li&gt;
+  &lt;li&gt;这本书说的有道理吗，是全部有还只是部分有道理？&lt;/li&gt;
+  &lt;li&gt;这本书和我有什么关系？&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-2&quot;&gt;阅读的四个渐进层次：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;基础阅读（elementary reading）：熟练识字阶段&lt;/li&gt;
+  &lt;li&gt;检视阅读（inspectional reading）：系统化的略读（skimming systematically），强调在规定时间内明确一本书所属的类别与基本架构&lt;/li&gt;
+  &lt;li&gt;分析阅读（analytical reading）：全盘、完整地阅读&lt;/li&gt;
+  &lt;li&gt;主题阅读（synoptical reading）：就某一主题阅读与之相关的许多本书&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-3&quot;&gt;检视阅读&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;先看书名页，然后如果有序就先看序。&lt;/li&gt;
+  &lt;li&gt;研究目录页，对这本书的基本架构做概括性的理解。&lt;/li&gt;
+  &lt;li&gt;如果书中附有索引，也要检阅一下。&lt;/li&gt;
+  &lt;li&gt;如果那是本包着书衣的新书，不妨读一下出版者的介绍。&lt;/li&gt;
+  &lt;li&gt;从你对目录很概略甚至有点模糊的印象当中，开始挑几个看来跟主题息息相关的篇章来看。&lt;/li&gt;
+  &lt;li&gt;最后一步，把书打开来，东翻翻西翻翻，念个一两段，有时候连续读几页，但不要太多。 你可以把自己当成一个侦探，在找寻一本书或思想主题的线索。随时保持敏捷，就很容易让一切状况清楚。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-4&quot;&gt;分析阅读&lt;/h2&gt;
+&lt;h3 id=&quot;section-5&quot;&gt;第一个阶段：找出一本书在谈些什么&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;你一定要知道自己在读的是哪一类书，而且要越早知道越好。最好早在你开始阅读之前就先知道。&lt;/li&gt;
+  &lt;li&gt;使用一个单一的句子，或最多几句话（一小段文字）来叙述整本书的内容。&lt;/li&gt;
+  &lt;li&gt;将书中重要篇章列举出来，说明它们如何按照顺序组成一个整体的架构。&lt;/li&gt;
+  &lt;li&gt;找出作者在问的问题，或作者想要解决的问题。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;section-6&quot;&gt;第二个阶段：诠释一本书的内容&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;找出重要单字，透过它们与作者达成共识。&lt;/li&gt;
+  &lt;li&gt;将一本书中最重要的句子圈出来，找出其中的主旨 。&lt;/li&gt;
+  &lt;li&gt;从相关文句的关联中，设法架构出一本书的基本论述。&lt;/li&gt;
+  &lt;li&gt;找出作者的解答。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;section-7&quot;&gt;第三个阶段：像是沟通知识一样地评论一本书&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;在你说出“我同意”，“我不同意”，或“我暂缓评论”之前，你一定要能肯定地说：“我了解了。”&lt;/li&gt;
+  &lt;li&gt;当你不同意作者的观点时，要理性地表达自己的意见，不要无理地辩驳或争论。&lt;/li&gt;
+  &lt;li&gt;尊重知识与个人观点的不同，在作任何评断之前，都要找出理论基础。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-8&quot;&gt;主题阅读&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;利用主题工具书，收集相关书目。&lt;/li&gt;
+  &lt;li&gt;检视阅读这些书目，确定哪些书与你的主题相关，在这个过程中你会更清楚你的主题。&lt;/li&gt;
+  &lt;li&gt;第二次通过检视阅读找出与主题相关的书，以及书中的章。&lt;/li&gt;
+  &lt;li&gt;用中立的语言，带领各个作者与你达成共识。&lt;/li&gt;
+  &lt;li&gt;理清问题，并让各个作者为你回答。&lt;/li&gt;
+  &lt;li&gt;界定主题，确保各个作者相关的观点都参与进来。&lt;/li&gt;
+  &lt;li&gt;分析讨论，把问题和议题依序排列，以求突出主题。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-9&quot;&gt;批评一部作品的四个角度：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;知识不足（uninformed）&lt;/li&gt;
+  &lt;li&gt;知识有错误（misinformed）&lt;/li&gt;
+  &lt;li&gt;不合逻辑&lt;/li&gt;
+  &lt;li&gt;分析不够完整&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;section-10&quot;&gt;做笔记的六个建议：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;画底线—在主要的重点，或重要又有力量的句子下画线。&lt;/li&gt;
+  &lt;li&gt;在画底线处的栏外再加画一道线—把你已经画线的部分再强调一遍，或是某一段很重要，但要画底线太长了，便在这一整段外加上一个记号。&lt;/li&gt;
+  &lt;li&gt;在空白处做星号或其他符号—要慎用，只用来强调书中十来个最重要的声明或段落即可。你可能想要将做过这样记号的地方每页折一个角，或是夹一张书签，这样你随时从书架上拿起这本书，打开你做记号的地方，就能唤醒你的记忆。&lt;/li&gt;
+  &lt;li&gt;在空白处编号—作者的某个论点发展出一连串的重要陈述时，可以做顺序编号。&lt;/li&gt;
+  &lt;li&gt;在空白处记下其他的页码—强调作者在书中其他部分也有过同样的论点，或相关的要点，或是与此处观点不同的地方。这样做能让散布全书的想法统一集中起来。许多读者会用Cf这样的记号，表示比较或参照的意思。&lt;/li&gt;
+  &lt;li&gt;将关键字或句子圈出来—这跟画底线是同样的功能。&lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Mon, 25 Jan 2016 22:00:00 +0800</pubDate>
+        <link>https://wenyuandu.github.io/2016/01/25/how-to-read-a-book/</link>
+        <guid isPermaLink="true">https://wenyuandu.github.io/2016/01/25/how-to-read-a-book/</guid>
+        
+        <category>book</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>
