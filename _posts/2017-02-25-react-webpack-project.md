@@ -1,3 +1,13 @@
+---
+layout:     post
+title:      "react＋webpack 构建web项目"
+date:       2017-2-25 15:30:00
+author:     "Mia Yu"
+catalog: 	true
+tags:
+    - name
+---
+
 ##一、准备工作
 安装node.js, npm(现在的node版本已整合npm，无需额外安装), webpack
 
