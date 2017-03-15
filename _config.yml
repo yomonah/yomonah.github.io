@@ -1,23 +1,23 @@
 # Site settings
-title: Wenyuan Du
-SEOTitle: Wenyuan Du's Blog
-header-img: img/home-bg.jpg
+title: Mia Yu
+SEOTitle: Mengya Yu's Blog
+header-img: img/post-bg-universe.jpg
 email: wenyuan@gmail.com
-description: "关于编程，摄影与读书"
-keyword: "编程，摄影，读书"
-url: "https://wenyuandu.github.io"              # your host, for absolute URL
+description: "个人博客，写点感想"
+keyword: "编程，读书，旅游，摄影，萌宠"
+url: "https://mengyayu.github.io"              # your host, for absolute URL
 baseurl: ""                             # for example, '/blog' if your blog hosted on 'host/blog'
 
 
 
 # SNS settings
 RSS: false
-weibo_username:     1952933935
-zhihu_username:     wen-yuan-4-42
-github_username:    wenyuandu
-# twitter_username:  wenyuan
-# facebook_username:  wenyuan
-# linkedin_username:  firstname-lastname-idxxxx
+weibo_username:     听说你像一首歌
+zhihu_username:     暂无
+github_username:    yomonah
+# twitter_username:  
+# facebook_username:  
+# linkedin_username:  
 
 
 
@@ -70,8 +70,8 @@ duoshuo_share: false                     # set to false if you want to use Comme
 
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
-sidebar-about-description: "纸屏石枕竹方床，手倦抛书午梦长。"
-sidebar-avatar: /img/1.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-about-description: "享受每一刻，最美的时光"
+sidebar-avatar: /img/head_pic.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
@@ -84,8 +84,8 @@ featured-condition-size: 1              # A tag will be featured if the size of 
 # Friends
 friends: [
     {
-        title: "Su",
-        href: "http://su.gallery/"
+        title: "stack overflow",
+        href: "http://stackoverflow.com/"
     },{
         title: "乱序",
         href: "http://mida.re/"
