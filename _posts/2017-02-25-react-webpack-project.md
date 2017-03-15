@@ -5,13 +5,13 @@ date:       2017-2-25 15:30:00
 author:     "Mia Yu"
 catalog: 	true
 tags:
-    - name
+    - react
 ---
 
-##一、准备工作
+# 一、准备工作
 安装node.js, npm(现在的node版本已整合npm，无需额外安装), webpack
 
-##二、新建项目文件夹： react-demo
+# 二、新建项目文件夹： react-demo
 在react-demo中创建一个package.json用于配置项目所需的各种模块，内容如下：
 ```
 {
@@ -70,7 +70,7 @@ npm -registry https://registry.npm.taobao.org info underscore
 registry = https://registry.npm.taobao.org
 ```
 
-##三、配置webpack
+# 三、配置webpack
 通过上述两个步骤之后，我们需要将react-demo工程文件构建成如下结构：
 ```
 app(file)
@@ -173,5 +173,5 @@ index.html文件如下：
 </html>
 ```
 
-##四、启动项目
+# 四、启动项目
 做好以上三个步骤后，一个简单的react＋webpack项目便构建成功，输入命令：npm run dev 启动工程，打开 http://localhost:8080 就可访问工程了。
