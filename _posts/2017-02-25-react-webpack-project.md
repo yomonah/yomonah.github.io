@@ -5,7 +5,7 @@ date:       2017-2-25 15:30:00
 author:     "Mia Yu"
 catalog: 	true
 tags:
-    - react
+    - webpack/node
 ---
 
 一、准备工作
