@@ -19,13 +19,12 @@ npm install webpack-dev-server
 
 接下来介绍下webpack-dev-server两种自动刷新模式，我创建的工程采用inline模式：
 1.iframe模式：页面放在iframe中，当发生改变时重载.
-        使用iframe模式的话，只需要在访问的URL中添加/webpack-dev-server：  
-```
-  http://localhost:8080/webpack-dev-server/index.html
-```
+使用iframe模式的话，只需要在访问的URL中添加/webpack-dev-server：  
+>http://localhost:8080/webpack-dev-server/index.html
+
 2.inline模式：将webpack-dev-server的客户端入口添加到总的包中
-        使用inline模式的话访问的URL格式无需改变，它有两种配置形式可以实现：
-       1.在webpack.config.js文件中添加：
+使用inline模式的话访问的URL格式无需改变，它有两种配置形式可以实现：
+1.在webpack.config.js文件中添加：
 ```
 devServer:{
   inline:true,
@@ -33,14 +32,13 @@ hot:true,
   port:3000,
 }
 ```
-       2.在package.json文件中的scripts（解释下scripts这个对象，它里边可以指定项目在不同 阶段需要执行的命令，以key, value的形式）指定配置：
+2.在package.json文件中的scripts（解释下scripts这个对象，它里边可以指定项目在不同 阶段需要执行的命令，以key, value的形式）指定配置：
 ```
 "scripts": {
   "dev": "webpack-dev-server --devtool eval --progress --colors --hot --inline --content-base build"
 }
 ```
-我采用的是inline模式，详细配置可以参照我的github:
-[俞梦雅github]https://github.com/yomonah/react-demo
+我采用的是inline模式，详细配置可以参照我的github:https://github.com/yomonah/react-demo
 
 上述配置中，hot代表启用热模块替换，所谓热模块替换是指我们在开发过程中，一旦前端代码有任何改动，会实时表现在浏览器中而无需手动刷新，这大大节约了开发效率和时间成本。以我的react项目为例，如果启动热模块替换的话，还需要安装一个包：react-hot-loader
 
@@ -51,5 +49,4 @@ hot:true,
 4.--port <number>: 设置端口号
 5.--https: 通过https协议提供webpack-dev-server，包括在提供请求是使用的自签名证书
 
-更多详细文档请参考官网：
-［webpack-dev-server官网］http://webpack.github.io/docs/webpack-dev-server.html#webpack-dev-server-cli
+更多详细文档请参考webpack-dev-server官网：http://webpack.github.io/docs/webpack-dev-server.html#webpack-dev-server-cli
