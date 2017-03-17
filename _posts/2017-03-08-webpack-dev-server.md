@@ -17,13 +17,15 @@ npm install webpack
 npm install webpack-dev-server
 ```
 
-接下来介绍下webpack-dev-server两种自动刷新模式，我创建的工程采用inline模式：
+接下来介绍下webpack-dev-server两种自动刷新模式：
+
 1. iframe模式：页面放在iframe中，当发生改变时重载.
 使用iframe模式的话，只需要在访问的URL中添加/webpack-dev-server：  
 >http://localhost:8080/webpack-dev-server/index.html
 
 2. inline模式：将webpack-dev-server的客户端入口添加到总的包中
 使用inline模式的话访问的URL格式无需改变，它有两种配置形式可以实现：
+
 1. 在webpack.config.js文件中添加：
 ```
 devServer:{
@@ -43,6 +45,7 @@ hot:true,
 上述配置中，hot代表启用热模块替换，所谓热模块替换是指我们在开发过程中，一旦前端代码有任何改动，会实时表现在浏览器中而无需手动刷新，这大大节约了开发效率和时间成本。以我的react项目为例，如果启动热模块替换的话，还需要安装一个包：react-hot-loader
 
 其他一些配置选项：
+
 1. --cotent-base <file>: 指定内容的基本路径,例：--content-base bundle
 2. --compress: 使用gzip压缩
 3. --host <hostname/ip>: 主机名或ip
