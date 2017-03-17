@@ -26,7 +26,7 @@ npm install webpack-dev-server
 2. inline模式：将webpack-dev-server的客户端入口添加到总的包中
 使用inline模式的话访问的URL格式无需改变，它有两种配置形式可以实现：
 
-1. 在webpack.config.js文件中添加：
+方式一：在webpack.config.js文件中添加：
 ```
 devServer:{
   inline:true,
@@ -34,7 +34,7 @@ hot:true,
   port:3000,
 }
 ```
-2. 在package.json文件中的scripts（解释下scripts这个对象，它里边可以指定项目在不同 阶段需要执行的命令，以key, value的形式）指定配置：
+方式二：在package.json文件中的scripts（解释下scripts这个对象，它里边可以指定项目在不同 阶段需要执行的命令，以key, value的形式）指定配置：
 ```
 "scripts": {
   "dev": "webpack-dev-server --devtool eval --progress --colors --hot --inline --content-base build"
@@ -43,6 +43,7 @@ hot:true,
 我采用的是inline模式，详细配置可以参照我的github:https://github.com/yomonah/react-demo
 
 上述配置中，hot代表启用热模块替换，所谓热模块替换是指我们在开发过程中，一旦前端代码有任何改动，会实时表现在浏览器中而无需手动刷新，这大大节约了开发效率和时间成本。以我的react项目为例，如果启动热模块替换的话，还需要安装一个包：react-hot-loader
+
 
 其他一些配置选项：
 
