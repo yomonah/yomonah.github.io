@@ -12,14 +12,14 @@ tags:
 
 所以现在我换用js和canvas实现环形计时器并将其封装成组件，我们调用这个组件时，只需要传一些配置属性，就可以根据不同需求来展示，非常灵活又实用，具体配置如下：
 > let props={
-  width:100,  //cavas画布宽度
-  height:100,  //画布高度
-  radius:20,  //计时器的半径
-  time:10*1000,  //需要倒计的时长
-  ringColor:'#999',  //进度条的颜色
-  defaultColor:'#333' ,  //默认底色
-  lineWidth: 5  //进度条的宽度
- }
+>  width:100,  //cavas画布宽度
+>  height:100,  //画布高度
+>  radius:20,  //计时器的半径
+>  time:10*1000,  //需要倒计的时长
+>  ringColor:'#999',  //进度条的颜色
+>  defaultColor:'#333' ,  //默认底色
+>  lineWidth: 5  //进度条的宽度
+>}
 
  具体实现代码可以访问：https://github.com/yomonah/react-demo/tree/master/src/components/circle_timer/circle_timer1
 
