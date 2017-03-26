@@ -50,6 +50,16 @@ plugins: [
     })
   ],
 ```
+这里做个补充，按照以上配置完成后生成的打包文件，在访问html时控制台会报一个错：It looks like you're using a minified copy of the development build of React. When deploying React apps to production, make sure to use the production build which skips development warnings and is faster. See https://fb.me/react-minification for more details.
+解决方案：
+在plugins里面添加配置：
+```
+new webpack.DefinePlugin({
+  "process.env":{
+    NODE_ENV:JSON.stringify('production')
+   }
+})
+```
 
 4.入口文件输出配置：
 ```
