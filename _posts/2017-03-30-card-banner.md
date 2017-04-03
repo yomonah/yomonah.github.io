@@ -8,7 +8,7 @@ tags:
     - js
 ---
 
-![](https://yomonah.github.io/img/card-banner/card.gif)
+![](https://yomonah.github.io/img/article-img/card-banner/card.gif)
 
 逛蘑菇街的时候看到这个效果的轮播图，就尝试着用react写了个这种效果的组件，用工具录下来的gif图有点卡，看起来不够流畅。
 
