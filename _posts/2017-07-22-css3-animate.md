@@ -56,6 +56,10 @@ css动画实现：
 
 剩下的一些无非是对于元素的旋转、缩放等处理，用transform等属性即可实现。
 
-demo展示中心：https://yomonah.github.io/project/app.html#/location
+小丸子demo：https://yomonah.github.io/project/app.html#/wanzi
 
-源码：https://github.com/yomonah/react-demo/tree/master/src/components/picture
+旅行小车demo：https://yomonah.github.io/project/app.html#/car
+
+小丸子源码：https://github.com/yomonah/react-demo/tree/master/src/components/wanzi
+
+旅行小车源码：https://github.com/yomonah/react-demo/tree/master/src/components/car
